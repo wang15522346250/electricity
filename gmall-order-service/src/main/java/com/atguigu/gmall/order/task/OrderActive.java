@@ -61,7 +61,7 @@ public class OrderActive {
                 orderInfoService.setOrderStatus(orderInfo);
             }
             long endTime = System.currentTimeMillis();
-            System.out.println("扫描用了" + (endTime - startTime) + "毫秒");
+            System.out.println("扫描用了" + (endTime - startTime) + " 毫秒");
         }
     }
 
