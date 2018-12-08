@@ -68,4 +68,8 @@ public class OrderActive {
     public void setOrderInfoService(OrderInfoService orderInfoService) {
         this.orderInfoService = orderInfoService;
     }
+
+    public void setExecutorService(ScheduledExecutorService executorService) {
+        this.executorService = executorService;
+    }
 }
