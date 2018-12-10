@@ -9,6 +9,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Component
 @EnableScheduling
@@ -25,15 +28,34 @@ public class OrderActive {
                 }
             });
 
+    /**
+     * 并发时读写锁
+     */
+    private ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+
     @Scheduled(cron = "0/50 * * * * ?")
     public void checkOrderExpireInfo() {
         //获取过期订单的集合
         System.out.println("开始扫描过期时间");
         long start = System.currentTimeMillis();
-        List<OrderInfo> orderInfoExpireList = orderInfoService.getOrderInfoExpireList();
+        Lock readLock = readWriteLock.readLock();
+        List<OrderInfo> orderInfoExpireList;
+        try {
+            readLock.lock();
+            orderInfoExpireList = orderInfoService.getOrderInfoExpireList();
+        } finally {
+            readLock.unlock();
+        }
+        Lock writeLock = readWriteLock.writeLock();
+
         for (OrderInfo orderInfo : orderInfoExpireList) {
             System.out.println("扫描完成");
-            orderInfoService.setOrderStatus(orderInfo);
+            writeLock.lock();
+            try {
+                orderInfoService.setOrderStatus(orderInfo);
+            } finally {
+                writeLock.unlock();
+            }
 
         }
         long time = System.currentTimeMillis() - start;
